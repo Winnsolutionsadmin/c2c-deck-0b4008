@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Correction-to-Capability</title>
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --card:#141418;
+    --line:#26262c;
+    --line-soft:#1b1b20;
+    --fg:#f3f1ec;
+    --muted:#9c988e;
+    --accent:#ff5a1f;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; height:100%; width:100%;
+    background:var(--bg); color:var(--fg);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:#0a0a0c; }
+
+  #slides{
+    display:flex;
+    flex-direction:row;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+  }
+  #slides::-webkit-scrollbar{ display:none; }
+  #slides{ scrollbar-width:none; }
+
+  .slide{
+    position:relative;
+    flex:0 0 100vw;
+    width:100vw;
+    height:100vh;
+    height:100dvh;
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:7vh 8vw;
+    overflow-y:auto;
+    background:
+      radial-gradient(ellipse 80% 60% at 85% -10%, rgba(255,90,31,0.08), transparent 60%),
+      var(--bg);
+  }
+  .slide::before{
+    content: attr(data-num);
+    position:absolute;
+    top:3vh; right:3vw;
+    font-family:var(--mono);
+    font-size:12vw;
+    font-weight:700;
+    color:transparent;
+    -webkit-text-stroke:1px var(--line);
+    line-height:1;
+    z-index:0;
+    pointer-events:none;
+    user-select:none;
+  }
+  .slide > *{ position:relative; z-index:1; }
+
+  .brand{
+    font-family:var(--mono);
+    font-size:.7rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:2.2rem;
+  }
+  .brand span{ color:var(--accent); }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:.78rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:1.1rem;
+  }
+  .headline{
+    font-size:clamp(2.1rem, 5vw, 4rem);
+    font-weight:700;
+    line-height:1.06;
+    letter-spacing:-0.02em;
+    max-width:19ch;
+    margin:0;
+  }
+  .headline .dim{ color:var(--muted); }
+  .lead{
+    font-size:clamp(1rem, 1.3vw, 1.2rem);
+    color:var(--muted);
+    line-height:1.65;
+    max-width:60ch;
+    margin-top:1.4rem;
+  }
+  .note{
+    font-size:.9rem;
+    color:var(--muted);
+    margin-top:1.2rem;
+    max-width:60ch;
+    line-height:1.6;
+  }
+
+  .quote-big{
+    font-size:clamp(1.7rem, 4.2vw, 3rem);
+    line-height:1.28;
+    font-weight:600;
+    border-left:4px solid var(--accent);
+    padding-left:1.6rem;
+    max-width:44ch;
+    margin:0;
+  }
+
+  /* stat grid */
+  .statgrid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:2.2rem 2rem;
+    margin-top:2.6rem;
+    max-width:920px;
+  }
+  .stat{ border-top:1px solid var(--line); padding-top:1rem; }
+  .stat .num{
+    font-family:var(--mono);
+    font-size:clamp(2rem, 3.6vw, 3rem);
+    font-weight:700;
+    color:var(--fg);
+    line-height:1;
+  }
+  .stat .num span{ color:var(--accent); }
+  .stat .label{
+    margin-top:.55rem;
+    font-size:.8rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    line-height:1.4;
+  }
+  .stat .sub{
+    margin-top:.3rem;
+    font-size:.74rem;
+    color:#726f68;
+    font-family:var(--mono);
+  }
+
+  /* receipt / evidence chip */
+  .receipt{
+    position:relative;
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:1.3rem 1.4rem 1rem;
+    margin-top:1.8rem;
+    max-width:640px;
+  }
+  .receipt::before{
+    content:'RECEIPT';
+    position:absolute;
+    top:-0.65em; left:1rem;
+    background:var(--bg);
+    padding:0 .5rem;
+    font-family:var(--mono);
+    font-size:.68rem;
+    letter-spacing:.18em;
+    color:var(--accent);
+  }
+  .receipt .line{
+    font-family:var(--mono);
+    font-size:.9rem;
+    color:var(--fg);
+    padding:.45rem 0;
+    border-bottom:1px dashed var(--line-soft);
+  }
+  .receipt .line:last-child{ border-bottom:none; }
+
+  .chiprow{ margin-top:1.4rem; display:flex; flex-wrap:wrap; gap:.5rem; }
+  .chip{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:.78rem;
+    letter-spacing:.02em;
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:.5rem .8rem;
+    color:var(--muted);
+  }
+
+  .pullquote{
+    font-family:var(--mono);
+    font-size:clamp(1.05rem, 1.8vw, 1.3rem);
+    line-height:1.55;
+    color:var(--fg);
+    border-left:3px solid var(--accent);
+    padding-left:1.2rem;
+    margin-top:1.6rem;
+    max-width:52ch;
+  }
+  .pullquote .meta{
+    display:block;
+    margin-top:.5rem;
+    font-size:.72rem;
+    color:var(--muted);
+    letter-spacing:.05em;
+  }
+
+  /* ladder cards */
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1.1rem;
+    margin-top:2.2rem;
+    max-width:1180px;
+  }
+  .card{
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:1.2rem 1.1rem;
+    display:flex;
+    flex-direction:column;
+    gap:.55rem;
+    min-height:230px;
+  }
+  .card .idx{
+    font-family:var(--mono);
+    color:var(--accent);
+    font-size:1.5rem;
+    font-weight:700;
+  }
+  .card .title{ font-weight:700; font-size:1rem; line-height:1.28; }
+  .card .principle{ font-size:.82rem; color:var(--muted); line-height:1.48; flex-grow:1; }
+  .card .exercise{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:#c9c6bf;
+    border-top:1px dashed var(--line-soft);
+    padding-top:.6rem;
+    line-height:1.5;
+  }
+  .card .exercise b{ color:var(--accent); }
+
+  /* title slide specifics */
+  .title-slide .headline{ font-size:clamp(2.6rem, 7.5vw, 5.6rem); max-width:16ch; }
+  .title-slide .lead{ max-width:44ch; }
+  .footer-line{
+    margin-top:3rem;
+    font-family:var(--mono);
+    font-size:.78rem;
+    color:var(--muted);
+    letter-spacing:.03em;
+  }
+  .footer-line span{ color:var(--accent); }
+
+  /* nav */
+  .nav-zone{
+    position:fixed;
+    top:0; height:100vh; height:100dvh;
+    width:11vw;
+    z-index:50;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    background:transparent;
+  }
+  .nav-zone.prev{ left:0; justify-content:flex-start; }
+  .nav-zone.next{ right:0; justify-content:flex-end; }
+  .nav-zone::after{
+    content:'';
+    font-family:var(--sans);
+    font-size:2rem;
+    color:var(--muted);
+    opacity:0;
+    transition:opacity .15s ease;
+    padding:0 .6vw;
+  }
+  .nav-zone.prev::after{ content:'\2039'; }
+  .nav-zone.next::after{ content:'\203A'; }
+  .nav-zone:hover::after{ opacity:.5; }
+
+  .counter{
+    position:fixed;
+    bottom:2.2vh; right:2.6vw;
+    z-index:50;
+    font-family:var(--mono);
+    font-size:.78rem;
+    letter-spacing:.05em;
+    color:var(--muted);
+    background:rgba(10,10,12,0.6);
+    padding:.35rem .6rem;
+    border:1px solid var(--line);
+  }
+  .counter b{ color:var(--accent); font-weight:600; }
+
+  .progress{
+    position:fixed;
+    left:0; bottom:0;
+    width:100%; height:3px;
+    background:var(--line-soft);
+    z-index:50;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--accent);
+    transition:width .25s ease;
+  }
+
+  @media (max-width: 760px){
+    html,body{ overflow:hidden; }
+    #slides{
+      flex-direction:column;
+      overflow-x:hidden;
+      overflow-y:auto;
+      scroll-snap-type:y mandatory;
+    }
+    .slide{
+      flex:0 0 100vh;
+      flex:0 0 100dvh;
+      width:100vw;
+      padding:9vh 7vw;
+    }
+    .slide::before{ font-size:26vw; top:1.5vh; right:2vw; }
+    .statgrid{ grid-template-columns:repeat(2, 1fr); gap:1.6rem 1.4rem; }
+    .cards{ grid-template-columns:1fr; gap:.8rem; }
+    .card{ min-height:0; }
+    .nav-zone{ display:none; }
+    .headline{ max-width:100%; }
+    .title-slide .headline{ font-size:clamp(2.2rem, 10vw, 3.4rem); }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-zone prev" id="prevZone" aria-label="previous slide"></div>
+<div class="nav-zone next" id="nextZone" aria-label="next slide"></div>
+<div class="counter" id="counter"><b>01</b> / 17</div>
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+<div id="slides">
+
+  <!-- 1. TITLE -->
+  <section class="slide title-slide" data-num="01">
+    <div class="brand">CORRECTION <span>&rarr;</span> CAPABILITY</div>
+    <h1 class="headline">Correction-to-Capability</h1>
+    <p class="lead">How one person runs Claude Code as a self-improving operating layer.</p>
+    <div class="footer-line">
+      <span>1,141</span> sessions &middot; <span>749</span> standing rules &middot; <span>122</span> enforcement hooks &middot; 13 weeks of real usage
+    </div>
+  </section>
+
+  <!-- 2. THESIS -->
+  <section class="slide" data-num="02">
+    <div class="eyebrow">The Thesis</div>
+    <p class="quote-big">Never let the same friction bill you twice.</p>
+    <p class="lead">Then build the machinery that makes that habit mechanical, not aspirational. Every stage in this deck is that machinery, in the order it gets built.</p>
+  </section>
+
+  <!-- 3. EVIDENCE BASE STAT GRID -->
+  <section class="slide" data-num="03">
+    <div class="eyebrow">The Evidence Base</div>
+    <h2 class="headline">Thirteen weeks, verified. Floor, not ceiling.</h2>
+    <div class="statgrid">
+      <div class="stat"><div class="num">1,141</div><div class="label">Sessions logged</div><div class="sub">518 project contexts</div></div>
+      <div class="stat"><div class="num">749</div><div class="label">Standing rules</div><div class="sub">~8/day &middot; 74 auto-promoted</div></div>
+      <div class="stat"><div class="num">17,786</div><div class="label">Corrections logged</div><div class="sub">zero-LLM-cost grep ledger</div></div>
+      <div class="stat"><div class="num">122</div><div class="label">Enforcement hooks</div><div class="sub">51 gates and guards</div></div>
+      <div class="stat"><div class="num">330</div><div class="label">Skills built</div><div class="sub">most candidates rejected</div></div>
+      <div class="stat"><div class="num">93</div><div class="label">Heartbeats</div><div class="sub">silent-failure detectors</div></div>
+      <div class="stat"><div class="num">4,019</div><div class="label">Hours reclaimed / year</div><div class="sub">325 automations, ~1.9 FTE floor</div></div>
+      <div class="stat"><div class="num">19<span>%</span></div><div class="label">Completion claims unverified</div><div class="sub">caught by the shadow gate</div></div>
+    </div>
+    <p class="note">Plus roughly 3,067 hours a year of always-on vigilance no human could sustain unaided.</p>
+  </section>
+
+  <!-- 4. ACT I -->
+  <section class="slide" data-num="04">
+    <div class="eyebrow">Act I &middot; The Individual, Amplified</div>
+    <h2 class="headline">One operator, output of a team.</h2>
+    <p class="lead">1,141 sessions across 518 project contexts in about thirteen weeks. The receipt: 325 distinct automations worth a conservative 4,019 hours a year, roughly 1.9 full-time employees, priced by editing items out rather than inflating them.</p>
+    <div class="chiprow">
+      <div class="chip">4,019 HRS/YR FLOOR &middot; 325 AUTOMATIONS &middot; ~1.9 FTE</div>
+      <div class="chip">9 OF 9 SPOT-CHECKED LAUNCHD LABELS VERIFIED LIVE</div>
+    </div>
+  </section>
+
+  <!-- 5. ACT II -->
+  <section class="slide" data-num="05">
+    <div class="eyebrow">Act II &middot; Operator of Agents</div>
+    <h2 class="headline">From doing the work to running the fleet.</h2>
+    <p class="lead">Six or more named persistent agents operate under a ratified fleet constitution, written by surveying the human with 171 structured questions rather than guessing at risk tolerance. Drake, the insurance operator, verified an entire ~$23,345/yr program from policy PDFs and touches only bind, pay, and sign, staged behind a physical security-key tap.</p>
+    <div class="chiprow">
+      <div class="chip">171-QUESTION SURVEY &rarr; FLEET-CONSTITUTION-V1</div>
+      <div class="chip">$250/TX &middot; $500/DAY NOVEL SPEND &middot; 3-NUDGE CHASE CAP</div>
+    </div>
+  </section>
+
+  <!-- 6. ACT III -->
+  <section class="slide" data-num="06">
+    <div class="eyebrow">Act III &middot; The Self-Improving System</div>
+    <h2 class="headline">The correction loop becomes the product.</h2>
+    <p class="lead">17,786 correction-shaped messages logged at zero LLM cost. When one repeats in substance, a turn-end gate refuses to close the conversation until it becomes a permanent rule. Thirteen weeks in: 749 standing rules, 122 enforcement hooks, and a nightly audit that escalates rules whose prose isn't working into hard blocks.</p>
+    <div class="chiprow">
+      <div class="chip">17,786 CORRECTIONS &rarr; 749 RULES &rarr; 122 HOOKS</div>
+      <div class="chip">74 RULES AUTO-PROMOTED BY THE NIGHTLY DREAM CYCLE</div>
+    </div>
+  </section>
+
+  <!-- 7. USE CASE: GM WAITLIST -->
+  <section class="slide" data-num="07">
+    <div class="eyebrow">Use Case &middot; Revenue Front Door</div>
+    <h2 class="headline">Replacing a SaaS with the family business's front door.</h2>
+    <p class="lead">Growing Mindfully, a real 128-capacity preschool, was paying for WaitlistPlus. Claude built the replacement: Cloudflare Workers waitlist, live rate-card pricing, 30-minute atomic holds, DocuSign tuition agreements, and an official CDPH immunization PDF auto-filled from vision-extracted vaccine records. It started as a Codex-versus-Claude head-to-head. The winner became the business.</p>
+    <div class="receipt">
+      <div class="line">1,217 PASSING TESTS, IN PRODUCTION</div>
+      <div class="line">FIRST FAMILY DEPOSIT: $1,745.00 &middot; STRIPE PAYMENT INTENT ON RECORD</div>
+      <div class="line">RECONCILED TO THE PENNY, STRIPE &harr; BRIGHTWHEEL</div>
+    </div>
+  </section>
+
+  <!-- 8. USE CASE: DRAKE -->
+  <section class="slide" data-num="08">
+    <div class="eyebrow">Use Case &middot; The Autonomous Broker</div>
+    <h2 class="headline">The agent that found the exposure no human caught in a year.</h2>
+    <p class="lead">Drake owns commercial insurance for two companies. It verified the entire program first-hand from policy PDFs, proving the broker's fee hid nothing, and runs multi-carrier quote chases through vendor email on its own. The human touches only bind, pay, and sign, behind a physical YubiKey tap. A sibling audit then found workers' comp had lapsed in February 2025 with four W2 employees on active payroll, a California uninsured-employer exposure.</p>
+    <div class="receipt">
+      <div class="line">~$23,345/YR PROGRAM VERIFIED FIRST-HAND FROM POLICY PDFS</div>
+      <div class="line">$9,875 BROKER CHARGE CONFIRMED CLEAN, NO HIDDEN FEE</div>
+      <div class="line">WC LAPSE FOUND: FEB 2025, 4 W2 EMPLOYEES, UNNOTICED OVER A YEAR</div>
+    </div>
+    <p class="pullquote">"Don't ask me shit unless you are certain you can't handle it."<span class="meta">The standing grant, preserved verbatim as law</span></p>
+  </section>
+
+  <!-- 9. USE CASE: TWICE-RULE -->
+  <section class="slide" data-num="09">
+    <div class="eyebrow">Use Case &middot; The Correction Engine</div>
+    <h2 class="headline">Never giving the same correction three times.</h2>
+    <p class="pullquote">"I'm tired of having to tell you to fix things. Why don't you just automatically do it?"<span class="meta">Seed quote, 2026-06-12</span></p>
+    <p class="lead">A zero-LLM-cost grep logs every correction-shaped message. When one repeats in substance, a turn-end gate won't let the conversation finish until it's captured as a permanent rule with an enforcement mechanism attached.</p>
+    <div class="receipt">
+      <div class="line">17,786 CORRECTIONS LOGGED</div>
+      <div class="line">749 STANDING RULES IN 13 WEEKS</div>
+      <div class="line">122 ENFORCEMENT HOOKS</div>
+    </div>
+  </section>
+
+  <!-- 10. USE CASE: 4019 HOURS -->
+  <section class="slide" data-num="10">
+    <div class="eyebrow">Use Case &middot; Pricing the Reclaimed Life</div>
+    <h2 class="headline">The 4,019-hour receipt.</h2>
+    <p class="lead">Asked to list everything automated in his life, an 8-agent swarm inventoried the estate: skills, agents, 62 laptop launchd jobs, mini rails, hooks, into a priced ledger. Deliberately the floor: items were edited out rather than inflated, and 9 of 9 spot-checked launchd labels verified live.</p>
+    <div class="statgrid" style="grid-template-columns:repeat(3,1fr); max-width:720px;">
+      <div class="stat"><div class="num">325</div><div class="label">Automations priced</div></div>
+      <div class="stat"><div class="num">4,019</div><div class="label">Hrs/yr, floor</div><div class="sub">~1.9 FTE</div></div>
+      <div class="stat"><div class="num">3,067</div><div class="label">Hrs/yr vigilance</div><div class="sub">always-on</div></div>
+    </div>
+    <div class="receipt">
+      <div class="line">ENROLLMENT + BILLING: 1,445H</div>
+      <div class="line">OPS MONITORING: 1,114H</div>
+      <div class="line">COMMUNICATIONS FOLLOW-THROUGH: 705H</div>
+    </div>
+  </section>
+
+  <!-- 11. USE CASE: REDTEAM -->
+  <section class="slide" data-num="11">
+    <div class="eyebrow">Use Case &middot; QA at Industrial Scale</div>
+    <h2 class="headline">Weeks of QA compressed into one command.</h2>
+    <p class="lead">Before shipping an approval-queue system, one /redteam invocation fanned 194 agents across 10 attack dimensions under one rule: a bug does not exist until it is reproduced. The same discipline handled a production crisis, when a runaway daemon leaked 241 SDK sessions and drove load average to 382. The postmortem refused the first plausible cause and enumerated five distinct mechanisms, including 16,087 retries of 13 poison events and a macOS background I/O throttle caught via fs_usage.</p>
+    <div class="receipt">
+      <div class="line">194 AGENTS &middot; 10 ATTACK DIMENSIONS</div>
+      <div class="line">122 DEFECTS FOUND, REPRODUCED, FIXED &middot; 134-TEST REGRESSION SUITE</div>
+      <div class="line">5 DISTINCT MECHANISMS FOUND &middot; 716/716 TESTS GREEN</div>
+    </div>
+  </section>
+
+  <!-- 12. USE CASE: ARYA -->
+  <section class="slide" data-num="12">
+    <div class="eyebrow">Use Case &middot; Family Life as a First-Class Domain</div>
+    <h2 class="headline">The same rigor applied to dinner and chores.</h2>
+    <p class="lead">Arya lives on the home server and texts exactly two people. Jarred gets real numbers and bad news first, his wife's thread stays clean: her entire experience of a grocery order is about four texts, no error messages, no price breakdowns. Standing orders under $100 place themselves, guarded by a sha256-blessed order script. When the kids' game went offline, the log was read back to the origin event: host disk 97% full.</p>
+    <div class="receipt">
+      <div class="line">AUTO-PLACE UNDER $100 &middot; SHA256-BLESSED SCRIPT</div>
+      <div class="line">ORIGIN EVENT: HOST DISK 97% FULL &middot; 11GB FREED</div>
+      <div class="line">2:30AM DELIBERATE BREAK &middot; HEAL PATH PROVEN LIVE</div>
+    </div>
+  </section>
+
+  <!-- 13. LADDER: FOUNDATION -->
+  <section class="slide" data-num="13">
+    <div class="eyebrow">The Ladder &middot; 1 of 3</div>
+    <h2 class="headline">Foundation: epistemics before automation.</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="idx">01</div>
+        <div class="title">The Record Is the Asset</div>
+        <div class="principle">The conversation is disposable. The record is the asset.</div>
+        <div class="exercise"><b>Try:</b> write a resume note a stranger could restart from tomorrow, then test it by restarting cold.</div>
+      </div>
+      <div class="card">
+        <div class="idx">02</div>
+        <div class="title">Question-Until-Origin</div>
+        <div class="principle">Probe every failure to the origin event, with a log line as evidence.</div>
+        <div class="exercise"><b>Try:</b> on your next bug, forbid yourself from fixing until you can name the origin event.</div>
+      </div>
+      <div class="card">
+        <div class="idx">03</div>
+        <div class="title">Terminal-State Prompting</div>
+        <div class="principle">Name DONE, the verification, and the danger boundary.</div>
+        <div class="exercise"><b>Try:</b> rewrite your last three prompts so each names its stop-condition.</div>
+      </div>
+      <div class="card">
+        <div class="idx">04</div>
+        <div class="title">The Twice-Rule</div>
+        <div class="principle">Log every correction verbatim. A second occurrence becomes a permanent rule, same turn.</div>
+        <div class="exercise"><b>Try:</b> keep the ledger one week, promote anything appearing twice into a written rule.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. LADDER: ENGINE -->
+  <section class="slide" data-num="14">
+    <div class="eyebrow">The Ladder &middot; 2 of 3</div>
+    <h2 class="headline">Engine: the correction pipeline.</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="idx">05</div>
+        <div class="title">Prevent &gt; Remind</div>
+        <div class="principle">A prose rule is the floor, not the solution.</div>
+        <div class="exercise"><b>Try:</b> convert your most-violated rule into one mechanical check that fires without anyone remembering it.</div>
+      </div>
+      <div class="card">
+        <div class="idx">06</div>
+        <div class="title">Fail-Then-Pass Proof</div>
+        <div class="principle">Proof lives at the layer the user experiences, not the exit code.</div>
+        <div class="exercise"><b>Try:</b> before trusting your next alert, force the failure it exists to catch and watch it fire.</div>
+      </div>
+      <div class="card">
+        <div class="idx">07</div>
+        <div class="title">Two-Key Completion</div>
+        <div class="principle">Done requires a concrete artifact: a SHA, a PR, a receipt.</div>
+        <div class="exercise"><b>Try:</b> one full day of artifact-or-it-didn't-happen.</div>
+      </div>
+      <div class="card">
+        <div class="idx">08</div>
+        <div class="title">Fix the Class, Not the Instance</div>
+        <div class="principle">After any fix, hunt the estate for siblings of the same failure shape.</div>
+        <div class="exercise"><b>Try:</b> take your last bug fix and find its siblings before calling it closed.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15. LADDER: SCALE -->
+  <section class="slide" data-num="15">
+    <div class="eyebrow">The Ladder &middot; 3 of 3</div>
+    <h2 class="headline">Scale: what the pipeline funds.</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="idx">09</div>
+        <div class="title">Gate the Factory</div>
+        <div class="principle">Do not automate on first occurrence. Most candidates should be rejected.</div>
+        <div class="exercise"><b>Try:</b> list five automation ideas and kill every one that fails the three-question gate.</div>
+      </div>
+      <div class="card">
+        <div class="idx">10</div>
+        <div class="title">Price Autonomy in Numbers</div>
+        <div class="principle">Replace approval loops with engineered safety envelopes.</div>
+        <div class="exercise"><b>Try:</b> write one numeric boundary, enforced in code, this week.</div>
+      </div>
+      <div class="card">
+        <div class="idx">11</div>
+        <div class="title">Silence Must Look Like Breakage</div>
+        <div class="principle">Optimize for zero silent failures, not zero failures.</div>
+        <div class="exercise"><b>Try:</b> pick one trusted cron job and make its silence detectable.</div>
+      </div>
+      <div class="card">
+        <div class="idx">12</div>
+        <div class="title">Graduate Deliberately</div>
+        <div class="principle">Route every question into a thin funnel. Force one route per thread at session end.</div>
+        <div class="exercise"><b>Try:</b> close or file every open thread this week, graduate at most one.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16. WHY THE WORLD WILL WORK THIS WAY -->
+  <section class="slide" data-num="16">
+    <div class="eyebrow">Why This Becomes the Default</div>
+    <h2 class="headline">Manual toil doesn't compound. This does.</h2>
+    <p class="lead">A person who fixes the same problem twice stays the same size. A person who turns every correction into a permanent, enforced rule gets bigger every week, without getting busier. The curriculum's own proof is that it was extracted by the method it teaches: a swarm analysis whose findings were verified against artifacts, filed as a thread, and graduated deliberately into this project.</p>
+    <p class="note">What the ladder produces once it is running is not a smarter assistant. It is an operating layer that keeps the receipts.</p>
+  </section>
+
+  <!-- 17. FINAL: GOVERNING HABIT -->
+  <section class="slide" data-num="17">
+    <div class="eyebrow">The Governing Habit</div>
+    <p class="quote-big">Never let the same friction bill you twice.</p>
+    <p class="lead">Everything in this deck is the machinery that makes that habit mechanical instead of aspirational.</p>
+    <div class="footer-line">Correction-to-Capability &middot; distilled from 13 weeks, 1,141 sessions, one operator.</div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var container = document.getElementById('slides');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var counter = document.getElementById('counter');
+  var progressFill = document.getElementById('progressFill');
+  var prevZone = document.getElementById('prevZone');
+  var nextZone = document.getElementById('nextZone');
+  var current = 0;
+  var scrollTimer = null;
+
+  function isVertical(){
+    return window.matchMedia('(max-width: 760px)').matches;
+  }
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function render(){
+    counter.innerHTML = '<b>' + pad(current + 1) + '</b> / ' + total;
+    progressFill.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function goTo(i){
+    i = Math.max(0, Math.min(total - 1, i));
+    current = i;
+    if (isVertical()){
+      container.scrollTo({ top: i * container.clientHeight, behavior: 'smooth' });
+    } else {
+      container.scrollTo({ left: i * container.clientWidth, behavior: 'smooth' });
+    }
+    render();
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (['ArrowRight','ArrowDown','PageDown',' '].indexOf(e.key) !== -1){
+      e.preventDefault(); goTo(current + 1);
+    } else if (['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key) !== -1){
+      e.preventDefault(); goTo(current - 1);
+    } else if (e.key === 'Home'){
+      e.preventDefault(); goTo(0);
+    } else if (e.key === 'End'){
+      e.preventDefault(); goTo(total - 1);
+    }
+  });
+
+  prevZone.addEventListener('click', function(){ goTo(current - 1); });
+  nextZone.addEventListener('click', function(){ goTo(current + 1); });
+
+  container.addEventListener('scroll', function(){
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){
+      var vertical = isVertical();
+      var pos = vertical ? container.scrollTop : container.scrollLeft;
+      var size = vertical ? container.clientHeight : container.clientWidth;
+      if (size > 0){
+        current = Math.max(0, Math.min(total - 1, Math.round(pos / size)));
+        render();
+      }
+    }, 90);
+  }, { passive: true });
+
+  window.addEventListener('resize', function(){ goTo(current); });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
